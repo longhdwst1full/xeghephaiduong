@@ -1,16 +1,5 @@
 {
-  "name": "xeghephaiduong",
-  "version": "1.0.0",
-  "description": "Website Dịch Vụ Xe Ghép Hải Dương Đi Các Tỉnh 24H",
-  "scripts": {
-    "start": "node dev-server.js",
-    "dev": "node dev-server.js",
-    "build": "node build.js"
-  },
-  "keywords": [
-    "xe-ghep",
-    "hai-duong"
-  ],
-  "author": "",
-  "license": "ISC"
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
 }

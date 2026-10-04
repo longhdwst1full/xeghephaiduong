@@ -1,2 +1,25 @@
-.vercel
+# Dependencies
+node_modules/
+
+# Deployment and build output
+.vercel/
 dist/
+build/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

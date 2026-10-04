@@ -4,11 +4,6 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[char]));
-  const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-
   // Hotline & Zalo cấu hình
   const HOTLINE_NUMBER = '0384026089';
   const HOTLINE_DISPLAY = '0384.026.089';
@@ -104,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
         mainNav.classList.remove('open');
-        mobileMenuBtn.setAttribute('aria-expanded', 'false');
       });
     });
 
@@ -112,17 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
       if (!mainNav.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
         mainNav.classList.remove('open');
-        mobileMenuBtn.setAttribute('aria-expanded', 'false');
       }
     });
   }
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && mainNav && mobileMenuBtn) {
-      mainNav.classList.remove('open');
-      mobileMenuBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
 
   // --- 3. SCROLL EFFECTS & BACK TO TOP ---
   const backToTopBtn = document.getElementById('backToTopBtn');
@@ -148,11 +134,11 @@ document.addEventListener('DOMContentLoaded', () => {
         backToTopBtn.classList.remove('show');
       }
     }
-  }, { passive: true });
+  });
 
   if (backToTopBtn) {
     backToTopBtn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: scrollBehavior });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
@@ -221,12 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return str.toLowerCase().trim();
   }
 
-  const SEARCH_LOCATIONS = LOCATIONS_DB.map(loc => ({
-    loc, nameClean: removeVietnameseTones(loc.name),
-    subClean: removeVietnameseTones(loc.sub || ''),
-    kwClean: removeVietnameseTones(loc.keywords || '')
-  }));
-
   // Hàm tìm kiếm địa điểm thông minh (hỗ trợ có dấu và không dấu, viết tắt)
   function searchLocations(query, isPickup = false) {
     const rawQuery = (query || '').trim();
@@ -235,40 +215,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Khi chưa gõ gì: hiển thị gợi ý theo ngữ cảnh
     if (!cleanQuery) {
       if (isPickup) {
-        // Danh sách 12 Huyện / Thành phố cũ của tỉnh Hải Dương
-        return [
-          LOCATIONS_DB.find(l => l.name === 'TP. Hải Dương'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Cẩm Giàng'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Bình Giang'),
-          LOCATIONS_DB.find(l => l.name === 'TP. Chí Linh'),
-          LOCATIONS_DB.find(l => l.name === 'TX. Kinh Môn'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Nam Sách'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Kim Thành'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Thanh Hà'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Gia Lộc'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Tứ Kỳ'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Ninh Giang'),
-          LOCATIONS_DB.find(l => l.name === 'Huyện Thanh Miện')
-        ].filter(Boolean);
+        // Lấy ngẫu nhiên 12 địa điểm từ toàn bộ danh sách
+        const shuffled = [...LOCATIONS_DB].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 12);
       } else {
-        // Gợi ý các địa điểm phổ biến đi 10 tỉnh thành và Hà Nội
-        return [
-          LOCATIONS_DB.find(l => l.name === 'Hà Nội (Các quận nội thành)'),
-          LOCATIONS_DB.find(l => l.name === 'Sân Bay Nội Bài - Ga T1'),
-          LOCATIONS_DB.find(l => l.name === 'Trung tâm TP. Hải Phòng'),
-          LOCATIONS_DB.find(l => l.name === 'Sân Bay Cát Bi'),
-          LOCATIONS_DB.find(l => l.name === 'Sân Bay Quốc Tế Vân Đồn'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Hạ Long'),
-          LOCATIONS_DB.find(l => l.name === 'Phường Bãi Cháy'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Bắc Ninh'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Bắc Giang'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Thái Bình'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Nam Định'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Hưng Yên'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Phủ Lý'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Ninh Bình'),
-          LOCATIONS_DB.find(l => l.name === 'Thành phố Thanh Hóa')
-        ].filter(Boolean);
+        // Gợi ý ngẫu nhiên 12 địa điểm từ toàn bộ danh sách
+        const shuffled = [...LOCATIONS_DB].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 12);
       }
     }
 
@@ -276,7 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Tính điểm phù hợp cho từng địa điểm
     const scored = [];
-    SEARCH_LOCATIONS.forEach(({ loc, nameClean, subClean, kwClean }) => {
+    LOCATIONS_DB.forEach(loc => {
+      const nameClean = removeVietnameseTones(loc.name);
+      const subClean = removeVietnameseTones(loc.sub || '');
+      const kwClean = removeVietnameseTones(loc.keywords || '');
       const fullText = `${nameClean} ${subClean} ${kwClean}`;
 
       // Kiểm tra tất cả các từ trong query có xuất hiện không
@@ -310,13 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Highlight từ khóa khớp
   function highlightText(text, query) {
-    if (!query || !query.trim()) return escapeHtml(text);
+    if (!query || !query.trim()) return text;
     const cleanQuery = removeVietnameseTones(query);
     const cleanText = removeVietnameseTones(text);
     const index = cleanText.indexOf(cleanQuery);
-    if (index === -1) return escapeHtml(text);
+    if (index === -1) return text;
     const originalPart = text.substring(index, index + query.length);
-    return escapeHtml(text.substring(0, index)) + '<mark>' + escapeHtml(originalPart) + '</mark>' + escapeHtml(text.substring(index + query.length));
+    return text.substring(0, index) + '<mark>' + originalPart + '</mark>' + text.substring(index + query.length);
   }
 
   // --- 5. TÍNH BÁO GIÁ NHANH TRÊN FORM WIDGET & AUTOCOMPLETE ---
@@ -361,13 +317,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Nếu chưa có key (do gõ tự do chưa click dropdown), tự động dò tìm vị trí khớp nhất
     if (!dropoffKey) {
       const matchDrop = searchLocations(dropoffText, false)[0];
-      dropoffKey = matchDrop ? (matchDrop.pricingKey || '') : '';
+      dropoffKey = matchDrop ? (matchDrop.pricingKey || 'hn_noi_thanh') : 'hn_noi_thanh';
       if (quickDropoff) quickDropoff.value = dropoffKey;
     }
 
     if (!pickupKey) {
       const matchPick = searchLocations(pickupText, true)[0];
-      pickupKey = matchPick ? (matchPick.pricingKey || '') : '';
+      pickupKey = matchPick ? (matchPick.pricingKey || 'hd_noi_tinh') : 'hd_noi_tinh';
       if (quickPickup) quickPickup.value = pickupKey;
     }
 
@@ -382,10 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Tra cứu dữ liệu từ PROVINCES_DATA (pricing-data.js)
-    const supportedRoute = pickupKey && dropoffKey && (pickupKey === 'hd_noi_tinh' || dropoffKey === 'hd_noi_tinh');
-    const areaData = (supportedRoute && typeof PROVINCES_DATA !== 'undefined' && PROVINCES_DATA[targetPricingKey])
+    const areaData = (typeof PROVINCES_DATA !== 'undefined' && PROVINCES_DATA[targetPricingKey])
       ? PROVINCES_DATA[targetPricingKey]
-      : null;
+      : (typeof PROVINCES_DATA !== 'undefined' ? PROVINCES_DATA['hn_noi_thanh'] : null);
 
     const typeKey = quickType.value || 'ghep';
     let priceText = '';
@@ -410,8 +365,12 @@ document.addEventListener('DOMContentLoaded', () => {
       typeLabel = 'Dịch vụ xe';
     }
 
+    // Lược bỏ phần ngoặc đơn trong điểm đón/trả (dùng split để tránh lỗi ngoặc lồng nhau)
+    const displayPickup = pickupText.split('(')[0].trim();
+    const displayDropoff = dropoffText.split('(')[0].trim();
+
     // Hiển thị lộ trình (không ghép chung loại dịch vụ ở đây)
-    estimateRouteName.textContent = `${pickupText} → ${dropoffText}`;
+    estimateRouteName.textContent = `${displayPickup} → ${displayDropoff}`;
     estimatePrice.textContent = priceText;
 
     // Hiển thị loại hình dịch vụ thành dòng riêng
@@ -419,14 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
       estimateServiceTypeName.textContent = typeLabel;
     }
 
-    // Hiển thị tên khu vực chi tiết được tra
+    // Ẩn tên khu vực chi tiết (Bảng giá áp dụng) theo yêu cầu
     if (estimateAreaSub) {
-      if (areaData && areaData.areaName) {
-        estimateAreaSub.innerHTML = `📍 <strong>Bảng giá áp dụng:</strong> ${escapeHtml(areaData.areaName)}`;
-        estimateAreaSub.style.display = 'block';
-      } else {
-        estimateAreaSub.style.display = 'none';
-      }
+      estimateAreaSub.style.display = 'none';
     }
 
     // Hiển thị ghi chú phụ phí bán kính và lưu ý riêng
@@ -434,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let noticeHtml = `<div style="font-weight: 700; margin-bottom: 2px;">⚠️ Ghi chú & Phụ phí cước:</div>`;
       noticeHtml += `<div>• Các huyện/khu vực lân cận bán kính ≤10km thêm 50k, trên 10km thêm 100k.</div>`;
       if (areaData && areaData.note) {
-        noticeHtml += `<div style="margin-top: 2px; color: #b45309;">• ${escapeHtml(areaData.note)}</div>`;
+        noticeHtml += `<div style="margin-top: 2px; color: #b45309;">• ${areaData.note}</div>`;
       }
       estimateSurchargeNotice.innerHTML = noticeHtml;
       estimateSurchargeNotice.style.display = 'block';
@@ -446,11 +400,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnEstimateZalo) {
       const msg = encodeURIComponent(
         `Chào Xe Ghép Hải Dương 24H, tôi cần đặt xe:\n` +
-        `• Điểm đón: ${pickupText}\n` +
-        `• Điểm trả: ${dropoffText}\n` +
+        `• Điểm đón: ${displayPickup}\n` +
+        `• Điểm trả: ${displayDropoff}\n` +
         `• Hình thức: ${typeLabel}\n` +
         `• Giá ước tính: ${priceText}\n` +
-        (areaData ? `• Khu vực: ${areaData.areaName}\n` : '') +
         `Vui lòng xác nhận và xếp xe đón tôi!`
       );
       btnEstimateZalo.href = `https://zalo.me/${HOTLINE_NUMBER}?text=${msg}`;
@@ -483,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = '';
       const sectionHeader = query.trim()
         ? `Kết quả gợi ý (${items.length})`
-        : (isPickup ? '12 Huyện / Thành phố cũ tỉnh Hải Dương' : 'Các Huyện / Quận cũ các tỉnh liên tỉnh');
+        : (isPickup ? 'Gợi ý điểm đón ngẫu nhiên' : 'Gợi ý điểm trả ngẫu nhiên');
 
       html += `<div class="autocomplete-section-title">${sectionHeader}</div>`;
 
@@ -497,10 +450,10 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="autocomplete-item-info">
                 <span class="autocomplete-main-name">${highlightedName}</span>
-                <span class="autocomplete-sub-name">${escapeHtml(item.sub)}</span>
+                <span class="autocomplete-sub-name">${item.sub}</span>
               </div>
             </div>
-            <span class="autocomplete-tag ${escapeHtml(item.tagClass)}">${escapeHtml(item.tag)}</span>
+            <span class="autocomplete-tag ${item.tagClass}">${item.tag}</span>
           </div>
         `;
       });
@@ -546,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
       items.forEach((item, idx) => {
         if (idx === selectedIndex) {
           item.classList.add('active');
-          item.scrollIntoView({ block: 'nearest', behavior: scrollBehavior });
+          item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         } else {
           item.classList.remove('active');
         }
@@ -567,8 +520,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Xóa hidden value cũ để mapping lại
       if (hidden) hidden.value = '';
 
-      // Hide stale quotes until the new route is selected or submitted.
-      if (estimateResult) estimateResult.style.display = 'none';
+      // Nếu ô này bị xóa trắng thì lập tức ẩn kết quả giá
+      if (!query.trim()) {
+        if (estimateResult) estimateResult.style.display = 'none';
+      }
 
       const results = searchLocations(query, isPickup);
       renderDropdown(results, query);
@@ -712,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Cuộn nhẹ tới kết quả nếu có
       if (estimateResult && estimateResult.style.display === 'block') {
-        estimateResult.scrollIntoView({ behavior: scrollBehavior, block: 'nearest' });
+        estimateResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     });
   }
@@ -758,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
         calculateQuickPrice();
 
         if (quickBookingForm) {
-          quickBookingForm.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
+          quickBookingForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
     });
@@ -797,13 +752,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modalSummary) {
         modalSummary.innerHTML = `
           <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin: 15px 0; text-align: left; font-size: 0.95rem; border: 1px solid #e2e8f0;">
-            <p style="margin-bottom: 6px;"><strong>Họ tên:</strong> ${escapeHtml(name)}</p>
-            <p style="margin-bottom: 6px;"><strong>Số điện thoại:</strong> <span style="color:#e74c3c; font-weight:700;">${escapeHtml(phone)}</span></p>
-            <p style="margin-bottom: 6px;"><strong>Điểm đón:</strong> ${escapeHtml(pickup)}</p>
-            <p style="margin-bottom: 6px;"><strong>Điểm đến:</strong> ${escapeHtml(dropoff)}</p>
-            <p style="margin-bottom: 6px;"><strong>Hình thức:</strong> ${escapeHtml(service)}</p>
-            <p style="margin-bottom: 6px;"><strong>Thời gian:</strong> ${escapeHtml(time)}</p>
-            ${note !== 'Không' ? `<p style="margin-bottom: 6px;"><strong>Ghi chú:</strong> ${escapeHtml(note)}</p>` : ''}
+            <p style="margin-bottom: 6px;"><strong>Họ tên:</strong> ${name}</p>
+            <p style="margin-bottom: 6px;"><strong>Số điện thoại:</strong> <span style="color:#e74c3c; font-weight:700;">${phone}</span></p>
+            <p style="margin-bottom: 6px;"><strong>Điểm đón:</strong> ${pickup}</p>
+            <p style="margin-bottom: 6px;"><strong>Điểm đến:</strong> ${dropoff}</p>
+            <p style="margin-bottom: 6px;"><strong>Hình thức:</strong> ${service}</p>
+            <p style="margin-bottom: 6px;"><strong>Thời gian:</strong> ${time}</p>
+            ${note !== 'Không' ? `<p style="margin-bottom: 6px;"><strong>Ghi chú:</strong> ${note}</p>` : ''}
           </div>
         `;
       }
